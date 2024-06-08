@@ -1,19 +1,36 @@
+using DotnetAPI.Data;
+using DotnetAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotnetAPI.Controllers;
 
 [ApiController]
-[Route("api/users")]
+[Route("users")]
 public class UserController: ControllerBase
 {
+    private readonly DataContextEF _ef;
     public UserController(IConfiguration config)
     {
-        // Console.WriteLine(config.GetConnectionString("DefaultConnection"));
+        _ef = new DataContextEF(config);
     }
 
     [HttpGet("", Name = "GetUsers")]
-    public string GetUsers()
+    public IActionResult GetUsers()
     {
-        return "Hello Worlds";
+        IEnumerable<User> users = _ef.Users.ToList<User>();
+        return Ok(new { users = users });
+    }
+    
+    [HttpGet("{id}", Name = "GetUser")]
+    public IActionResult GetUser(int id)
+    {
+        User? user = _ef.Users.Find(id);
+        
+        if (user == null)
+        {
+            return NotFound();
+        }
+        
+        return Ok(new { user = user });
     }
 }
